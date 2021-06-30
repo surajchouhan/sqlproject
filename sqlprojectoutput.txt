@@ -415,6 +415,338 @@ mysql> select MAX(AMT) from Salespeople s INNER JOIN Orders o where s.snum=o.snu
 +-----------------+
 1 row in set (0.14 sec)
 
+/*31 
+select SNUM,SNAME,COMM,CITY from salespeople;*/
+mysql> select SNUM,SNAME,COMM,CITY from salespeople;
++------+---------+------+-----------+
+| SNUM | SNAME   | COMM | CITY      |
++------+---------+------+-----------+
+| 1001 | Peel    |   12 | London    |
+| 1002 | Serres  |   13 | SanJose   |
+| 1003 | AxelRod |   10 | New York  |
+| 1004 | Motika  |   11 | London    |
+| 1007 | Rifkin  |   15 | Barcelona |
+| 1008 | Fran    |   25 | London    |
++------+---------+------+-----------+
+6 rows in set (0.11 sec)
+
+/*32  Select all customers whose names fall in between ‘A’ and ‘G’ alphabetical range*/
+mysql>  select CNAME from customers where CNAME like 'A%G';
+Empty set (2.44 sec)
+
+
+/*33Select all the possible combinations of customers you can assign/*
+mysql> select c1.cname,c2.cname from Customers c1 , Customers c2 where c1.snum=c2.snum AND c1.CITY=c2.CITY;
++----------+----------+
+| cname    | cname    |
++----------+----------+
+| Hoffman  | Hoffman  |
+| Ciemens  | Hoffman  |
+| Giovami  | Giovami  |
+| Liu      | Liu      |
+| Grass    | Grass    |
+| Hoffman  | Ciemens  |
+| Ciemens  | Ciemens  |
+| Pereira  | Pereira  |
+| Cisneros | Cisneros |
++----------+----------+
+9 rows in set (0.04 sec)
+
+
+/*34 Select all orders that are greater than the average for October 4.
+  here inner query return average amount of orders on date 4 October and
+   outer query return ONUM and amount whosw greater than average amount*/
+
+mysql> select ONUM,AMT from Orders  where AMT>(select AVG(AMT) from orders where ODATE='1990-04-10');
++------+---------+
+| ONUM | AMT     |
++------+---------+
+| 3002 |  1900.1 |
+| 3005 | 5160.45 |
+| 3006 | 1098.16 |
+| 3008 |    4723 |
+| 3009 | 1713.23 |
+| 3010 | 1309.95 |
+| 3011 | 9891.88 |
++------+---------+
+7 rows in set (0.11 sec)
+
+/*35 Write a select command using correlated subquery that selects the names and numbers of all customers with ratings equal to the maximum
+  for their city.
+  here inner query return maximum rating and outer query return CNUM and customer name whose rating equal to output of inner query*/  
+mysql> select CNUM,CNAME from Customers where RATING=(select MAX(RATING) from Customers);
++------+----------+
+| CNUM | CNAME    |
++------+----------+
+| 2004 | Grass    |
+| 2008 | Cisneros |
++------+----------+
+2 rows in set (0.00 sec)
+
+
+/*37 Write a select command that produces the rating followed by the name of each customer in SanJose.
+  this return customer name and its Rating whose live in "Sanjose"*/
+mysql> select CNAME,RATING From Customers where CITY="Sanjose";
++----------+--------+
+| CNAME    | RATING |
++----------+--------+
+| Liu      |    200 |
+| Cisneros |    300 |
++----------+--------+
+2 rows in set (0.00 sec
+
+
+
+/*38 Find all orders with amounts smaller than any amount for a customer in SanJose.
+  here i used subquery inner query return average amount from orders whose customers live in "sanjose" and outer query return 
+   all orders which is have less amount of output of inner query*/
+mysql> select * from Orders where AMT<(select AVG(AMT)from Orders,Customers where Customers.CITY="Sanjose");
++------+---------+------------+------+------+
+| ONUM | AMT     | ODATE      | CNUM | SNUM |
++------+---------+------------+------+------+
+| 3001 |   18.69 | 1990-03-10 | 2008 | 1007 |
+| 3002 |  1900.1 | 1990-03-10 | 2007 | 1004 |
+| 3003 |  767.19 | 1990-03-10 | 2001 | 1001 |
+| 3006 | 1098.16 | 1990-03-10 | 2008 | 1007 |
+| 3007 |   75.75 | 1990-04-10 | 2004 | 1002 |
+| 3009 | 1713.23 | 1990-04-10 | 2002 | 1003 |
+| 3010 | 1309.95 | 1990-06-10 | 2004 | 1002 |
++------+---------+------------+------+------+
+7 rows in set (0.00 sec)
+
+/*39 Find all orders with above average amounts for their customers
+  here inner query return average amount from customers where customers having orders in order table
+ and outer query return all orders whose amount greater than average amount of inner query*/
+mysql> select* from Orders where AMT>(select AVG(AMT) from Orders,Customers where Customers.CNUM=Orders.CNUM);
+
++------+---------+------------+------+------+
+| ONUM | AMT     | ODATE      | CNUM | SNUM |
++------+---------+------------+------+------+
+| 3005 | 5160.45 | 1990-03-10 | 2003 | 1002 |
+| 3008 |    4723 | 1990-05-10 | 2006 | 1001 |
+| 3011 | 9891.88 | 1990-06-10 | 2006 | 1001 |
++------+---------+------------+------+------+
+3 rows in set (0.11 sec)
+
+
+
+/*40) Write a query that selects the highest rating in each city.*/
+mysql> select CNAME,MAX(RATING) from customers group by  CITY;
++---------+-------------+
+| CNAME   | MAX(RATING) |
++---------+-------------+
+| Grass   |         300 |
+| Hoffman |         100 |
+| Giovami |         200 |
+| Liu     |         300 |
++---------+-------------+
+4 rows in set (0.09 sec)
+
+/*41Write a query that calculates the amount of the salesperson’s commission on each order by a customer with a rating above 100.00.*/
+mysql> select COMM from customers c INNER JOIN Salespeople s where c.snum=s.snum AND RATING>100;
++------+
+| COMM |
++------+
+|   10 |
+|   13 |
+|   13 |
+|   15 |
++------+
+4 rows in set (0.01 sec)
+
+/*42  Count the customers with ratings above SanJose’s average.
+     here inner query return average rating of those customers who lives in "sanjose"
+    and outer query return count all the customers whose rating greater than outpute of inner query*/
+
+mysql> select count(*) from Customers where RATING>(select AVG(RATING) from Customers where CITY="Sanjose");
++----------+
+| count(*) |
++----------+
+|        2 |
++----------+
+1 row in set (0.10 sec)
+
+/*43Find all salespeople that are located in either Barcelona or London.
+   this query return all the salespeople who live in either "Barcelon" or "London"*/
+
+mysql> select * from Salespeople where CITY="Barcelona" OR CITY="London";
++------+--------+-----------+------+
+| SNUM | SNAME  | CITY      | COMM |
++------+--------+-----------+------+
+| 1001 | Peel   | London    |   12 |
+| 1004 | Motika | London    |   11 |
+| 1007 | Rifkin | Barcelona |   15 |
+| 1008 | Fran   | London    |   25 |
++------+--------+-----------+------+
+4 rows in set (0.00 sec)
+
+
+
+/*46 Write a query that will give you all orders for more than $1000.00
+  this query return all the order whose amount greater than 1000*73.28*/
+
+ysql> select* from Orders where AMT>(1000.00*73.28);
+Empty set (0.04 sec)
+
+/*47 Write a query that lists each order number followed by the name of the customer who made that order
+   here i have used INNER JOIN for retrive Order num and Customer num*/
+mysql> select Orders.ONUM,Customers.CNUM from Orders INNER JOIN Customers where Orders.CNUM=Customers.CNUM;
++------+------+
+| ONUM | CNUM |
++------+------+
+| 3003 | 2001 |
+| 3008 | 2006 |
+| 3011 | 2006 |
+| 3005 | 2003 |
+| 3007 | 2004 |
+| 3010 | 2004 |
+| 3009 | 2002 |
+| 3002 | 2007 |
+| 3001 | 2008 |
+| 3006 | 2008 |
++------+------+
+10 rows in set (0.00 sec)
+
+/*48Write a query that selects all the customers whose ratings are equal to or greater than ANY(in the SQL sense) of ‘Serres’.
+  in this question i have used 2 subquery first subquery return SNUM from salespeople where salespeople name "Serres"
+  and second query return minimum rating from customers whose cnum matching from output of first subquery then outer query return 
+   all customers where rating greater than equal to output of second subquery.*/
+
+mysql> select* from Customers where RATING>=(Select MIN(RATING) from Customers where Customers.CNUM=(Select SNUM from Salespeople where SNAME="Serres"));
+Empty set (0.01 sec)
+
+/*49Write two queries that will produce all orders taken on October 3 or October 4
+   first query return all orders on date october 3
+   and second query return all orders on date october 4*/
+
+mysql> select* from Orders where ODATE='1990-03-10';
++------+---------+------------+------+------+
+| ONUM | AMT     | ODATE      | CNUM | SNUM |
++------+---------+------------+------+------+
+| 3001 |   18.69 | 1990-03-10 | 2008 | 1007 |
+| 3002 |  1900.1 | 1990-03-10 | 2007 | 1004 |
+| 3003 |  767.19 | 1990-03-10 | 2001 | 1001 |
+| 3005 | 5160.45 | 1990-03-10 | 2003 | 1002 |
+| 3006 | 1098.16 | 1990-03-10 | 2008 | 1007 |
++------+---------+------------+------+------+
+5 rows in set (0.00 sec)
+
+mysql> select* from Orders where ODATE='1990-04-10';
++------+---------+------------+------+------+
+| ONUM | AMT     | ODATE      | CNUM | SNUM |
++------+---------+------------+------+------+
+| 3007 |   75.75 | 1990-04-10 | 2004 | 1002 |
+| 3009 | 1713.23 | 1990-04-10 | 2002 | 1003 |
++------+---------+------------+------+------+
+2 rows in set (0.00 sec)
+
+
+
+/*50 ) Find only those customers whose ratings are higher than every customer in Rome.
+    in this i have used subquery inner query return Maximum rating from customers where city is Rome and 
+     outer query return customers whose rating is greater than output of inner query*/
+mysql> select*from Customers where RATING>(Select MAX(RATING) from Customers where CITY="Rome");
++------+----------+---------+--------+------+
+| CNUM | CNAME    | CITY    | RATING | SNUM |
++------+----------+---------+--------+------+
+| 2004 | Grass    | Berlin  |    300 | 1002 |
+| 2008 | Cisneros | SanJose |    300 | 1007 |
++------+----------+---------+--------+------+
+2 rows in set (0.00 sec)
+
+/*51 Write a query on the Customers table whose output will exclude all customers with a rating<= 100.00, unless they are located in Rome
+    this query return all customers excluding those customers rating is less than 100*/
+
+mysql> select * from Customers where RATING>100;
++------+----------+---------+--------+------+
+| CNUM | CNAME    | CITY    | RATING | SNUM |
++------+----------+---------+--------+------+
+| 2002 | Giovami  | Rome    |    200 | 1003 |
+| 2003 | Liu      | SanJose |    200 | 1002 |
+| 2004 | Grass    | Berlin  |    300 | 1002 |
+| 2008 | Cisneros | SanJose |    300 | 1007 |
++------+----------+---------+--------+------+
+4 rows in set (0.00 sec)
+
+/*52) Find all rows from the customer’s table for which the salesperson number is 1001.
+ this query return all the customers where SNUM is 1001*/
+
+
+mysql> select* from Customers where SNUM=1001;
++------+---------+--------+--------+------+
+| CNUM | CNAME   | CITY   | RATING | SNUM |
++------+---------+--------+--------+------+
+| 2001 | Hoffman | London |    100 | 1001 |
+| 2006 | Ciemens | London |    100 | 1001 |
++------+---------+--------+--------+------+
+2 rows in set (0.02 sec)
+
+/*54) Write a query that selects all orders save those with zeroes or NULL in the amount file
+    return those Orders where amount either 0 or NULL*/
+
+mysql> select * from Orders where AMT=0 OR AMT=NULL;
+Empty set (0.01 sec)
+
+
+/*56 Find all salespeople name and commission.
+   this query return name and commision of salespeople*/
+
+
+mysql> select SNAME,COMM from Salespeople;
++---------+------+
+| SNAME   | COMM |
++---------+------+
+| Peel    |   12 |
+| Serres  |   13 |
+| AxelRod |   10 |
+| Motika  |   11 |
+| Rifkin  |   15 |
+| Fran    |   25 |
++---------+------+
+6 rows in set (0.00 sec)
+
+/*57 ) Write a query that produces the names and cities of all customers with the same rating as Hoffman. Write the query using Hoffman’s cnum
+      rather than his rating, so that it would still be usable if his rating is changed.
+      in this i have used 2 subquery first inner query return CNUM from customers where  customer name is "Hoffman"  then second inner query return
+      RATING from customers where CNUM equal to result of first inner subquery then outer query return customers name and city whose rating is equal to
+      output of second inner subquery*/
+mysql> select CNAME,CITY from Customers where RATING=(Select RATING FROM Customers where CNUM=(Select CNUM from Customers where CNAME="Hoffman"));
++---------+--------+
+| CNAME   | CITY   |
++---------+--------+
+| Hoffman | London |
+| Ciemens | London |
+| Pereira | Rome   |
++---------+--------+
+3 rows in set (0.10 sec)
+
+/*59) Write a query that produces the names and ratings of all customers who have average orders.
+      in this question i used subquery inner query return average amount from orders table and outer query return
+     which Customers name and rating there amount greater than average amount*/
+
+select CNAME,RATING from Customers,Orders where AMT>=(select AVG(AMT) from Orders);
+
+/*60 Find the SUM of all Amounts from the orders table.
+  this query return sum of all amt from orders table*/
+
+mysql> select SUM(AMT) from Orders;
++--------------------+
+| SUM(AMT)           |
++--------------------+
+| 26658.400022506714 |
++--------------------+
+1 row in set (0.01 sec)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
